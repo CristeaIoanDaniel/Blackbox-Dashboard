@@ -47,6 +47,9 @@ option(LV_USE_LIBJPEG_TURBO "Use libjpeg turbo to decode JPEG" OFF)
 option(LV_USE_FFMPEG "Use libffmpeg to display video using lv_ffmpeg" OFF)
 option(LV_USE_FREETYPE "Use freetype library" OFF)
 
+set(LV_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(LV_BUILD_DEMOS OFF CACHE BOOL "" FORCE)
+
 # Set C and C++ standards
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 17)
@@ -67,10 +70,16 @@ add_compile_definitions($<$<BOOL:${LV_USE_FFMPEG}>:LV_USE_FFMPEG=1>)
 
 # Add LVGL subdirectory
 add_subdirectory(lvgl)
-target_include_directories(lvgl PUBLIC ${PROJECT_SOURCE_DIR} ${SDL2_INCLUDE_DIRS})
+target_include_directories(lvgl PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}> ${SDL2_INCLUDE_DIRS})
+target_compile_definitions(lvgl PUBLIC LV_CONF_INCLUDE_SIMPLE)
 
-set(MAIN_SOURCES src/mouse_cursor_icon.c src/hal/hal.c)
-set(MAIN_LIBS lvgl lvgl::examples lvgl::demos lvgl::thorvg ${SDL2_LIBRARIES})
+set(MAIN_SOURCES src/mouse_cursor_icon.c src/hal/hal.c src/gui_dashbord.c src/vehicle_data.c src/map_view.c)
+
+if(TARGET SDL2::SDL2)
+    set(MAIN_LIBS lvgl lvgl::thorvg SDL2::SDL2)
+else()
+    set(MAIN_LIBS lvgl lvgl::thorvg ${SDL2_LIBRARIES})
+endif()
 
 # Create the main executable, depending on the FreeRTOS option
 if(USE_FREERTOS)
@@ -79,7 +88,6 @@ if(USE_FREERTOS)
 else()
     list(APPEND MAIN_SOURCES src/main.c)
 endif()
-
 
 if(NOT MSVC)
     list(APPEND MAIN_LIBS m pthread)
@@ -169,10 +177,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -Wextra
         -Wformat-security
         -Wmaybe-uninitialized
-        # -Wmissing-prototypes
         -Wpointer-arith
         -Wmultichar
-        -Wno-pedantic # ignored for now, we convert functions to pointers for properties table.
+        -Wno-pedantic
         -Wreturn-type
         -Wshadow
         -Wshift-negative-value
@@ -188,7 +195,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 if (ASAN)
     message(STATUS "AddressSanitizer enabled")
 
-    # Add AddressSanitizer flags
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
