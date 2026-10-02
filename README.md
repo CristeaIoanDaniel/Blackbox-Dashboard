@@ -1,3 +1,22 @@
+This project is a real-time embedded dashboard simulator that combines LVGL UI rendering, SDL desktop display, GPS map tiles, and serial telemetry from a Pico 2W device. It is designed to visualize vehicle data as a functional HMI prototype and as a testing platform for automotive-style instrumentation.
+
+If you are running it you should be aware that the app depends on:
+
+-working SDL and build dependencies
+- a valid serial connection to the Pico
+- a correct map tile directory
+- a compatible screen configuration
+- a stable hardware setup for telemetry
+For anyone running the project for the first time, the most important practical checks are:
+
+- ensure the build tools are installed
+- confirm the serial device is connected and accessible
+- verify the map asset folder exists
+- run the app with a real telemetry source if you want the dashboard to behave as intended
+
+
+
+
 # VSCode Simulator project for LVGL
 
 [LVGL](https://github.com/lvgl/lvgl) is written mainly for microcontrollers and embedded systems, however you can run the library **on your PC** as well without any embedded hardware. The code written on PC can be simply copied when your are using an embedded system.
